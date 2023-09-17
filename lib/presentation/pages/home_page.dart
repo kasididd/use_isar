@@ -22,6 +22,14 @@ class HomePageState extends State<HomePage> {
     queryStream.listen((event) async {
       await readEmail();
       stcSetDisplay.add(false);
+      print("Email Update Setstate");
+    });
+
+    Query<Student> studdenetQ = isar.students.filter().classRoom((q) => q.nameClassContains(caseSensitive: false, 'new')).build();
+    Stream<List<Student>> studetnStream = studdenetQ.watch();
+    studetnStream.listen((event) {
+      final data = event.map((e) => e.toJson()).toList();
+      print("update : $data");
     });
     super.initState();
   }
@@ -33,75 +41,103 @@ class HomePageState extends State<HomePage> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Card(
-            color: Colors.redAccent,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: DefaultTextStyle(
-                style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w400),
-                child: StreamBuilder<bool>(
-                    stream: stcSetDisplay.stream,
-                    builder: (context, snapshot) {
-                      return Column(
-                        children: [
-                          (listStudents.isNotEmpty && listEmails.isNotEmpty)
-                              ? Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    ElevatedButton(
-                                      onPressed: selectStudents ? null : () => {selectStudents = true, stcSetDisplay.add(false)},
-                                      child: const Text("Students"),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: !selectStudents ? null : () => {selectStudents = false, stcSetDisplay.add(false)},
-                                      child: const Text("Emails"),
-                                    ),
-                                  ],
-                                )
-                              : Text(listStudents.isNotEmpty
-                                  ? "Students"
-                                  : listEmails.isNotEmpty
-                                      ? "Emails"
-                                      : "No data"),
-                          SizedBox(
-                            height: 520,
-                            child: Container(
-                              decoration: const BoxDecoration(
-                                  border: Border(
-                                top: BorderSide(),
-                              )),
-                              child: ListView.builder(
-                                shrinkWrap: false,
-                                itemCount: (listStudents.isNotEmpty && listEmails.isNotEmpty)
-                                    ? [listStudents.length, listEmails.length][selectStudents ? 0 : 1]
-                                    : listStudents.isNotEmpty
-                                        ? listStudents.length
-                                        : listEmails.length,
-                                itemBuilder: (context, index) {
-                                  if ((listStudents.isNotEmpty && selectStudents) || listEmails.isEmpty) {
+          Expanded(
+            child: Card(
+              color: Colors.redAccent,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: DefaultTextStyle(
+                  style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w400),
+                  child: StreamBuilder<bool>(
+                      stream: stcSetDisplay.stream,
+                      builder: (context, snapshot) {
+                        return Column(
+                          children: [
+                            (listStudents.isNotEmpty && listEmails.isNotEmpty)
+                                ? Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      ElevatedButton(
+                                        onPressed: selectStudents ? null : () => {selectStudents = true, stcSetDisplay.add(false)},
+                                        child: const Text("Students"),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: !selectStudents ? null : () => {selectStudents = false, stcSetDisplay.add(false)},
+                                        child: const Text("Emails"),
+                                      ),
+                                    ],
+                                  )
+                                : Text(listStudents.isNotEmpty
+                                    ? "Students"
+                                    : listEmails.isNotEmpty
+                                        ? "Emails"
+                                        : "No data"),
+                            Expanded(
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                    border: Border(
+                                  top: BorderSide(),
+                                )),
+                                child: ListView.builder(
+                                  shrinkWrap: false,
+                                  itemCount: (listStudents.isNotEmpty && listEmails.isNotEmpty)
+                                      ? [listStudents.length, listEmails.length][selectStudents ? 0 : 1]
+                                      : listStudents.isNotEmpty
+                                          ? listStudents.length
+                                          : listEmails.length,
+                                  itemBuilder: (context, index) {
+                                    if ((listStudents.isNotEmpty && selectStudents) || listEmails.isEmpty) {
+                                      return Container(
+                                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+                                        decoration: const BoxDecoration(border: Border(bottom: BorderSide(), left: BorderSide(), right: BorderSide())),
+                                        child: Column(
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                const Text(
+                                                  "name",
+                                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                                ),
+                                                Text(listStudents[index].fullName ?? "No name"),
+                                              ],
+                                            ),
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                const Text(
+                                                  "ClassRoom",
+                                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                                ),
+                                                Text(listStudents[index].classRoom.nameClass ?? "No name"),
+                                              ],
+                                            ),
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                const Text(
+                                                  "status",
+                                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                                ),
+                                                Text(listStudents[index].status.name),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }
                                     return Container(
-                                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
-                                      decoration: const BoxDecoration(border: Border(bottom: BorderSide(), left: BorderSide(), right: BorderSide())),
+                                      decoration: const BoxDecoration(border: Border(bottom: BorderSide())),
                                       child: Column(
                                         children: [
                                           Row(
                                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                             children: [
                                               const Text(
-                                                "name",
+                                                "Namee",
                                                 style: TextStyle(fontWeight: FontWeight.bold),
                                               ),
-                                              Text(listStudents[index].fullName ?? "No name"),
-                                            ],
-                                          ),
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              const Text(
-                                                "ClassRoom",
-                                                style: TextStyle(fontWeight: FontWeight.bold),
-                                              ),
-                                              Text(listStudents[index].classRoom.nameClass ?? "No name"),
+                                              Text(listEmails[index].title),
                                             ],
                                           ),
                                           Row(
@@ -111,47 +147,20 @@ class HomePageState extends State<HomePage> {
                                                 "status",
                                                 style: TextStyle(fontWeight: FontWeight.bold),
                                               ),
-                                              Text(listStudents[index].status.name),
+                                              Text(listEmails[index].status.name),
                                             ],
                                           ),
                                         ],
                                       ),
                                     );
-                                  }
-                                  return Container(
-                                    decoration: const BoxDecoration(border: Border(bottom: BorderSide())),
-                                    child: Column(
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            const Text(
-                                              "Namee",
-                                              style: TextStyle(fontWeight: FontWeight.bold),
-                                            ),
-                                            Text(listEmails[index].title),
-                                          ],
-                                        ),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            const Text(
-                                              "status",
-                                              style: TextStyle(fontWeight: FontWeight.bold),
-                                            ),
-                                            Text(listEmails[index].status.name),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
+                                  },
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      );
-                    }),
+                          ],
+                        );
+                      }),
+                ),
               ),
             ),
           ),
