@@ -1,66 +1,64 @@
-// ignore_for_file: avoid_print
 import 'package:use_isar/data/database/mapping/mapping_isar.dart';
 
-void readIsarEmails() async {
+Future<List<Email>> readIsarEmails() async {
   List<Email>? emails = await isar.emails.where().findAll();
-  if (kDebugMode) {
-    print(emails.map((e) => e.toJson()).toList());
-  }
+  return (emails.map((e) => e).toList());
 }
 
-Future<void> readIsarStudent() async {
+Future<List<Student>> readIsarStudent() async {
   List<Student>? students = await isar.students.where().findAll();
-  final ems = isar.students.filter().idLessThan(3).findAll();
-  print((await ems).map((e) => e.toJson()).toList());
-  print(students.map((e) => e.toJson()).toList());
+  return (students.map((e) => e).toList());
 }
 
-void createIsarStudent() async {
-  var newStudents = Student(classRoom: ClassRoom()..nameClass = "sofware");
+Future createIsarStudent() async {
+  var newStudents = Student(classRoom: ClassRoom()..nameClass = "software");
   newStudents
     ..fullName = 'Kasidit Wansudon'
     ..status = Status.sent;
-  isar.writeTxn(() => isar.students.put(newStudents));
+  await isar.writeTxn(() => isar.students.put(newStudents));
 }
 
-void createIsarEmails() async {
+Future createIsarEmails() async {
   var newEmail = addEmail;
   newEmail.status = Status.sent;
   final recipient = Recipient()..address = 'new address';
-  print(recipient);
   newEmail.recipients = [recipient];
-  await isar.writeTxn(() async {
-    await isar.emails.putAll([newEmail]).then(print); // insert & update
+  await isar.writeTxnSync(() async {
+    isar.emails.putAllSync([newEmail]);
   });
 }
 
-void updateIsarStudent() async {
-  var newStudents = Student(classRoom: ClassRoom()..nameClass = "sofware");
+Future updateIsarStudent() async {
+  var data = isar.students.filter().classRoom((q) => q.nameClassContains('software')).findAllSync();
+  if (data.isEmpty) return;
+  var newStudents = data.first;
   // newStudents.id = 2;
   newStudents
-    ..fullName = 'kasiddi'
+    ..classRoom.nameClass = 'New Class'
     ..status = Status.sent;
   await isar.writeTxn(() async {
     await isar.students.putAll([newStudents]); // insert & update
   });
 }
 
-void updateIsarEmail(int id) async {
-  var newEmail = addEmail;
-  if (isar.emails.where().idEqualTo(id).isEmptySync()) return;
-  newEmail.id = 2;
-  newEmail.status = Status.sent;
+Future updateIsarEmail(int id) async {
+  var data = isar.emails.filter().statusEqualTo(Status.sent).findAllSync();
+  if (data.isEmpty) return;
+  final newEmail = data.first;
+  newEmail.status = Status.draft;
   final recipient = Recipient()..address = 'me';
   newEmail.recipients = [recipient];
   await isar.writeTxn(() async {
-    await isar.emails.putAll([newEmail]).then(print); // insert & update
+    await isar.emails.putAll([newEmail]); // insert & update
   });
 }
 
-void deleteIsarStudents(int id) async {
-  isar.writeTxnSync(() => isar.students.deleteSync(id));
+Future deleteIsarStudents(int id) async {
+  final data = isar.students.where().findAllSync();
+  if (data.isNotEmpty) isar.writeTxnSync(() => isar.students.deleteSync(data.last.id));
 }
 
-void deleteIsarEmails(int id) async {
-  isar.writeTxnSync(() => isar.emails.deleteSync(isar.emails.where().findAllSync().last.id));
+Future deleteIsarEmails(int id) async {
+  final data = isar.emails.where().findAllSync();
+  if (data.isNotEmpty) isar.writeTxnSync(() => isar.emails.deleteSync(data.last.id));
 }

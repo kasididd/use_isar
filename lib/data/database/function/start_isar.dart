@@ -12,11 +12,3 @@ Future openIsar() async {
 Future clearIsar() async {
   await isar.writeTxn(() async => await isar.clear());
 }
-
-extension IsarShorHand on Isar {
-  Future<void> w() async => await writeTxn(() async {
-        // await run;
-        // await isar.students.put(Student(classRoom: ClassRoom()..nameClass = "sofware"));
-        // print(isar.students.put(Student(classRoom: ClassRoom()..nameClass = "sofware")).runtimeType);
-      });
-}
